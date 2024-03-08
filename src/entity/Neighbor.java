@@ -11,6 +11,8 @@ public class Neighbor {
     private HashMap<Integer, HashSet<Integer>> neighborMap = new HashMap<>();
     PermutationRank permRank = new PermutationRank();
     private PermUtil permUtil = new PermUtil();
+
+    private Problem problem=new Problem();
     private int total;
 
     public int getTotal() {
@@ -21,11 +23,12 @@ public class Neighbor {
         this.total = total;
     }
 
-    public Neighbor(int n) {
-        int N = permUtil.factorial(n);
+    public Neighbor(Problem problem) {
+        int n= problem.getN();
+        int N = problem.getnP();
         total=N;
         for (int i = 0; i < N; i++) {
-            int[] p = initPerm(n);
+            int[] p = permUtil.initPerm(n);
             permRank.unrank(n, i, p);
 
             HashSet<Integer> indicesSet = new HashSet<>();
@@ -42,13 +45,7 @@ public class Neighbor {
         }
     }
 
-    private int[] initPerm(int n) {
-        int[] p = new int[n];
-        for (int i = 0; i < n; i++) {
-            p[i] = i;
-        }
-        return p;
-    }
+
 
     public int[] getNeighbors(int i) {
         HashSet<Integer> neighborsHashset = neighborMap.get(i);

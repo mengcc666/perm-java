@@ -1,13 +1,19 @@
+import entity.Matching;
 import entity.Neighbor;
+import entity.Problem;
 import entity.Snake;
 
+import java.io.IOException;
+
 public class Main {
-    public static void main(String[] args) {
-        int n = 4;
-        Neighbor neighbor = new Neighbor(n);
+    public static void main(String[] args) throws IOException {
+        Problem problem=new Problem();
+        problem.setN(4);
+        Neighbor neighbor = new Neighbor(problem);
         Snake snake = new Snake();
-        int N = neighbor.getTotal();
-        snake.initPath(new int[N]);
-        snake.start(neighbor);
+        snake.initPath(problem);
+        snake.start(neighbor,problem);
+        Matching matching=new Matching(problem);
+        matching.findPairs(problem);
     }
 }

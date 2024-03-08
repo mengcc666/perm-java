@@ -43,4 +43,39 @@ public class PermUtil {
             j--;
         }
     }
+
+    public int[] initPerm(int n) {
+        int[] p = new int[n];
+        for (int i = 0; i < n; i++) {
+            p[i] = i;
+        }
+        return p;
+    }
+
+    public boolean checkNeighbor(int[] p1,int[] p2){
+        int diff = 0;
+        int countSame = 0;
+
+        for (int i = 0; i < p1.length; i++) {
+            if (p1[i] == p2[i]) {
+                countSame++;
+                if (countSame == p1.length) {
+                    return false;
+                }
+            }
+
+            if (p1[i] != p2[i]) {
+                if (diff > 0) return false;
+                diff = 1;
+
+                if (p1[i] != p2[i + 1] || p2[i] != p1[i + 1]) {
+                    return false;
+                }
+
+                i++;
+            }
+        }
+
+        return true;
+    }
 }
