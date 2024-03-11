@@ -6,8 +6,17 @@ public class Problem {
     private int n;
     private int nP;
 
+    private int maxTimeForMatching;
+
     private final PermUtil permUtil = new PermUtil();
 
+    public int getMaxTimeForMatching() {
+        return maxTimeForMatching;
+    }
+
+    public void setMaxTimeForMatching(int maxTimeForMatching) {
+        this.maxTimeForMatching = maxTimeForMatching;
+    }
 
     public int getnP() {
         return nP;

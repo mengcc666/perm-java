@@ -3,10 +3,7 @@ package entity;
 import util.PermUtil;
 import util.PermutationRank;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class Matching {
 
@@ -17,6 +14,19 @@ public class Matching {
     private int[] pairs;
     private final PermUtil permUtil = new PermUtil();
     private final PermutationRank permRank = new PermutationRank();
+
+    /*
+        L: Sequence of random index of perm
+     */
+    private int[] L;
+
+    public void initL(int N) {
+        L = new int[N];
+        for (int i = 0; i < N; i++) {
+            L[i] = i;
+        }
+        permUtil.shuffle(L);
+    }
 
     public Matching(Problem problem) {
         setPermutationHashMap(problem);
@@ -41,36 +51,57 @@ public class Matching {
         }
     }
 
-    public void findPairs(Problem problem) {
-        HashMap<Integer, int[]> permutationHashMapTemp = permutationHashMap;
-        int N = problem.getnP();
-        for (int i = 0; i < N - 1; i++) {
-            int[] pi = permutationHashMapTemp.get(i);
-            if (pi == null) {
-                continue;
-            }
-            HashMap<Integer, int[]> currentNeighbors = new HashMap<>();
-            for (int j = i + 1; j < N; j++) {
-                int[] pj = permutationHashMapTemp.get(j);
-                if (pj == null) {
+
+    public void findMatchingM1(Problem problem) {
+        int i, j, k, nL, minL = 100000000;
+        int[] neighbors = new int[20];
+        int nn; // nn - number of neighbors
+        int[] p, q; // current permutations
+        int maxTime = problem.getMaxTimeForMatching();
+        for (int time = 0; time < maxTime; time++) {
+            HashMap<Integer, int[]> permHashMap = permutationHashMap;
+            initL(problem.getnP());
+            i = 0;
+            int nPairs = 0;
+            nL = problem.getnP();
+            while (i < nL) { // loop
+                p = permHashMap.get(L[i]);
+                nn = 0; // neighbors
+                for (j = i + 1; j < nL; j++) {
+                    q = permHashMap.get(L[j]);
+                    if (permUtil.checkNeighbor(p, q)) {
+                        neighbors[nn++] = j;
+                    }
+                }
+
+                if (nn == 0) {
+                    i++;
                     continue;
                 }
-                if (permUtil.checkNeighbor(pi, pj)) {
-                    currentNeighbors.put(j, pj);
+                // new pair
+                int qRandom = new Random().nextInt(nn);
+                pairs[L[i]] = L[neighbors[qRandom]];
+                pairs[L[neighbors[qRandom]]] = L[i];
+                nL -= 2;
+
+                int offset = 1;
+                for (k = i; k < nL; k++) {
+                    if (L[k + 1] == L[neighbors[qRandom]]) {
+                        offset = 2;
+                    }
+                    L[k] = L[k + offset];
                 }
             }
-            int countOfNeighbors = currentNeighbors.size();
-            if (countOfNeighbors > 1) {
-                Random random = new Random();
-                List<Integer> keysList = new ArrayList<>(currentNeighbors.keySet());
-                int randomIndex = random.nextInt(keysList.size());
-                pairs[i] = randomIndex;
-                pairs[randomIndex] = i;
-                permutationHashMapTemp.remove(i);
-                permutationHashMapTemp.remove(randomIndex);
-            }
 
+            if (minL > nL) {
+                minL = nL;
+                System.out.println(" minN " + minL);
+                if (nL == 0) {
+                    permUtil.printArray(pairs, " Pairs ");
+                    break;
+                }
+
+            }
         }
-        permUtil.printArray(pairs,"Pairs");
     }
 }
