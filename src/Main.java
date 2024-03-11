@@ -9,11 +9,12 @@ public class Main {
     public static void main(String[] args) throws IOException {
         Problem problem=new Problem();
         problem.setMaxTimeForMatching(1000000);
-        problem.setN(5);
+        problem.setN(4);
         Neighbor neighbor = new Neighbor(problem);
-        Snake snake = new Snake();
-        snake.initPath(problem);
-        snake.start(neighbor,problem);
+        neighbor.getNeighbors(0);
+//        Snake snake = new Snake();
+//        snake.initPath(problem);
+//        snake.start(neighbor,problem);
         Matching matching=new Matching(problem);
         matching.findMatchingM1(problem);
     }

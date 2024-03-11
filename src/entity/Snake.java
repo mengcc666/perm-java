@@ -4,6 +4,8 @@ import util.FileUtil;
 import util.PermUtil;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class Snake {
 
@@ -45,22 +47,23 @@ public class Snake {
             if (headIndex > 0) {
                 predecessorIndex = headIndex - 1;
             }
-            int[] neighbors = neighborObject.getNeighbors(path[headIndex]);
-            permUtil.shuffle(neighbors);
+            ArrayList<Integer> neighbors = neighborObject.getNeighbors(path[headIndex]);
+            Collections.shuffle(neighbors);
+//            permUtil.shuffle(neighbors);
             int nextNodeIndexInPath = -1;
-            for (int i = 0; i < neighbors.length; i++) {
+            for (int i = 0; i < neighbors.size(); i++) {
                 if (predecessorIndex >= 0) {
-                    if (neighbors[i] == path[predecessorIndex]) {
+                    if (neighbors.get(i) == path[predecessorIndex]) {
                         continue;
                     }
                 }
-                nextNodeIndexInPath = findIndex(neighbors[i]);
+                nextNodeIndexInPath = findIndex(neighbors.get(i));
                 if (nextNodeIndexInPath == -1) {
-                    path[headIndex + 1] = neighbors[i];
+                    path[headIndex + 1] = neighbors.get(i);
                     headIndex++;
                     break;
                 }
-                if (i == neighbors.length - 1) {
+                if (i == neighbors.size() - 1) {
                     permUtil.rotateArray(path, nextNodeIndexInPath + 1, headIndex);
                 }
             }

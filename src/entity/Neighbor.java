@@ -3,12 +3,13 @@ package entity;
 import util.PermUtil;
 import util.PermutationRank;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Objects;
 
 public class Neighbor {
-    private HashMap<Integer, HashSet<Integer>> neighborMap = new HashMap<>();
+    private HashMap<Integer, ArrayList<Integer>> neighborMap = new HashMap<>();
     PermutationRank permRank = new PermutationRank();
     private PermUtil permUtil = new PermUtil();
 
@@ -31,7 +32,7 @@ public class Neighbor {
             int[] p = permUtil.initPerm(n);
             permRank.unrank(n, i, p);
 
-            HashSet<Integer> indicesSet = new HashSet<>();
+            ArrayList<Integer> indicesSet = new ArrayList<>();
 
             for (int j = 0; j < n - 1; j++) {
                 int[] temp = Arrays.copyOf(p, n);
@@ -47,17 +48,12 @@ public class Neighbor {
 
 
 
-    public int[] getNeighbors(int i) {
-        HashSet<Integer> neighborsHashset = neighborMap.get(i);
+    public ArrayList<Integer> getNeighbors(int i) {
+        ArrayList<Integer> neighbors = neighborMap.get(i);
 
-        if (neighborsHashset != null) {
-            // Convert HashSet<Integer> to int array
-            int[] neighborsArray = neighborsHashset.stream().mapToInt(Integer::intValue).toArray();
-//            System.out.println("Neighbors for node " + i + ": " + Arrays.toString(neighborsArray));
-            return neighborsArray;
-        } else {
-//            System.out.println("No neighbors found for node " + i);
-            return new int[0]; // Return an empty array if no neighbors found
-        }
+        //            System.out.println("Neighbors for node " + i + ": " + neighbors);
+        //            System.out.println("No neighbors found for node " + i);
+        // Return an empty array if no neighbors found
+        return Objects.requireNonNullElseGet(neighbors, ArrayList::new);
     }
 }
