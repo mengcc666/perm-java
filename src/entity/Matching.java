@@ -24,8 +24,8 @@ public class Matching {
     private int[] L;
 
     public void setUnmatched(Problem problem) {
-        unmatched=new ArrayList<>();
-        for (int i=0;i<problem.getnP();i++){
+        unmatched = new ArrayList<>();
+        for (int i = 0; i < problem.getnP(); i++) {
             unmatched.add(i);
         }
     }
@@ -41,7 +41,7 @@ public class Matching {
     public Matching(Problem problem) {
         setPermutationHashMap(problem);
         initPairs(problem);
-        matched=new ArrayList<>();
+        matched = new ArrayList<>();
         setUnmatched(problem);
     }
 
@@ -117,50 +117,66 @@ public class Matching {
         }
     }
 
-    public void findMatchingMM1(Problem problem,Neighbor neighbor){
+    public void findMatchingMM1(Problem problem, Neighbor neighbor) {
         initL(problem.getnP());
-        while (!unmatched.isEmpty()){
+        while (!unmatched.isEmpty()) {
             Collections.shuffle(unmatched);
-            ArrayList<Integer> neighbors=neighbor.getNeighbors(unmatched.get(0));
-            Collections.shuffle(neighbors);
-            for (int i=0;i<neighbors.size();i++){
-                if (!matched.contains((neighbors.get(i)))){
-                    matched.add(unmatched.get(0));
-                    matched.add(neighbors.get(i));
-                    unmatched.remove(0);
-                    final int tempi=i;
-                    unmatched.removeIf(s->s.equals(neighbors.get(tempi)));
-                    break;
-                }
-                if (i==neighbors.size()-1){
-                    int curr= unmatched.get(0),currNbr= neighbors.get(0),nbrPartner=0;
-                    int previousPairIndex;
-                    // Force pair
-                    // Remove neighbors[0] and its partner from matched
-                    for (int j=0;j<matched.size();j++){
-                        if (matched.get(j)==neighbors.get(0)){
-                            if (j%2==0){
-                                previousPairIndex=j;
-                                nbrPartner= matched.get(j+1);
-                            }else {
-                                previousPairIndex=j-1;
-                                nbrPartner= matched.get(j-1);
+            int currNode = unmatched.get(0);
+            ArrayList<Integer> neighborsOfCurrNode = neighbor.getNeighbors(currNode);
+            Collections.shuffle(neighborsOfCurrNode);
+            int nextNode = neighborsOfCurrNode.get(0);
+            // Next node is unmatched, just add (currNode, nextNode) to matched and remove them from unmatched
+            if (unmatched.contains(nextNode)) {
+                matched.add(currNode);
+                matched.add(nextNode);
+                unmatched.remove(0);// Remove current node
+                final int finalNextNode = nextNode;
+                unmatched.removeIf(s -> s.equals(finalNextNode));
+            } else {
+                // Next node is already matched, do random walk
+                ArrayList<Integer> visited = new ArrayList<>();
+                boolean deadEnd;
+                do {
+                    deadEnd=true;
+                    visited.add(currNode);
+                    if (visited.size()%2!=0){
+                        for(int nbr:neighbor.getNeighbors(currNode)){
+                            if (!visited.contains(nbr)){
+                                currNode=nbr;deadEnd=false;break;
                             }
-                            matched.remove(previousPairIndex);
-                            matched.remove(previousPairIndex);
-                            matched.add(curr);
-                            matched.add(currNbr);
-                            unmatched.remove(0);
-                            unmatched.add(nbrPartner);
-                            break;
                         }
+                    }else {
+                        currNode=findPartner(currNode);
+                        deadEnd=false;
                     }
+//                    System.out.println(visited);
+                    if (unmatched.contains(currNode) && visited.size()%2==1){
+                        visited.add(currNode);
+                        for (int v:visited){
+                            unmatched.removeIf(s->s.equals(v));
+                            matched.removeIf(s->s.equals(v));
+                        }
+                        matched.addAll(visited);
+                        break;
+                    }
+                } while (!deadEnd);
+            }
+//            System.out.println(String.valueOf(matched.size())+matched);
+            System.out.println(matched.size());
+        }
+
+    }
+
+    private int findPartner(int nodeIndex) {
+        for (int i = 0; i < matched.size(); i++) {
+            if (matched.get(i) == nodeIndex) {
+                if (i % 2 == 0) {
+                    return matched.get(i + 1);
+                } else {
+                    return matched.get(i - 1);
                 }
             }
-            System.out.println(matched+" len="+String.valueOf(matched.size()));
-
         }
-        System.out.println(matched+" len="+String.valueOf(matched.size()));
-
+        return -1;
     }
 }
