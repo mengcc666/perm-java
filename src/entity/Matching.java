@@ -12,6 +12,9 @@ public class Matching {
 
 
     private int[] pairs;
+    private ArrayList<Integer> matched;
+
+    private ArrayList<Integer> unmatched;
     private final PermUtil permUtil = new PermUtil();
     private final PermutationRank permRank = new PermutationRank();
 
@@ -19,6 +22,13 @@ public class Matching {
         L: Sequence of random index of perm
      */
     private int[] L;
+
+    public void setUnmatched(Problem problem) {
+        unmatched=new ArrayList<>();
+        for (int i=0;i<problem.getnP();i++){
+            unmatched.add(i);
+        }
+    }
 
     public void initL(int N) {
         L = new int[N];
@@ -31,6 +41,8 @@ public class Matching {
     public Matching(Problem problem) {
         setPermutationHashMap(problem);
         initPairs(problem);
+        matched=new ArrayList<>();
+        setUnmatched(problem);
     }
 
     public void initPairs(Problem problem) {
@@ -103,5 +115,52 @@ public class Matching {
 
             }
         }
+    }
+
+    public void findMatchingMM1(Problem problem,Neighbor neighbor){
+        initL(problem.getnP());
+        while (!unmatched.isEmpty()){
+            Collections.shuffle(unmatched);
+            ArrayList<Integer> neighbors=neighbor.getNeighbors(unmatched.get(0));
+            Collections.shuffle(neighbors);
+            for (int i=0;i<neighbors.size();i++){
+                if (!matched.contains((neighbors.get(i)))){
+                    matched.add(unmatched.get(0));
+                    matched.add(neighbors.get(i));
+                    unmatched.remove(0);
+                    final int tempi=i;
+                    unmatched.removeIf(s->s.equals(neighbors.get(tempi)));
+                    break;
+                }
+                if (i==neighbors.size()-1){
+                    int curr= unmatched.get(0),currNbr= neighbors.get(0),nbrPartner=0;
+                    int previousPairIndex;
+                    // Force pair
+                    // Remove neighbors[0] and its partner from matched
+                    for (int j=0;j<matched.size();j++){
+                        if (matched.get(j)==neighbors.get(0)){
+                            if (j%2==0){
+                                previousPairIndex=j;
+                                nbrPartner= matched.get(j+1);
+                            }else {
+                                previousPairIndex=j-1;
+                                nbrPartner= matched.get(j-1);
+                            }
+                            matched.remove(previousPairIndex);
+                            matched.remove(previousPairIndex);
+                            matched.add(curr);
+                            matched.add(currNbr);
+                            unmatched.remove(0);
+                            unmatched.add(nbrPartner);
+                            break;
+                        }
+                    }
+                }
+            }
+            System.out.println(matched+" len="+String.valueOf(matched.size()));
+
+        }
+        System.out.println(matched+" len="+String.valueOf(matched.size()));
+
     }
 }
