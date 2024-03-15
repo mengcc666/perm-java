@@ -21,7 +21,7 @@ public class Matching {
     /*
         L: Sequence of random index of perm
      */
-    private int[] L;
+    private ArrayList<Integer> L;
 
     public void setUnmatched(Problem problem) {
         unmatched = new ArrayList<>();
@@ -31,11 +31,11 @@ public class Matching {
     }
 
     public void initL(int N) {
-        L = new int[N];
+        L = new ArrayList<>();
         for (int i = 0; i < N; i++) {
-            L[i] = i;
+            L.add(i);
         }
-        permUtil.shuffle(L);
+        Collections.shuffle(L);
     }
 
     public Matching(Problem problem) {
@@ -64,57 +64,30 @@ public class Matching {
     }
 
 
-    public void findMatchingM1(Problem problem) {
-        int i, j, k, nL, minL = 100000000;
-        int[] neighbors = new int[20];
-        int nn; // nn - number of neighbors
-        int[] p, q; // current permutations
-        int maxTime = problem.getMaxTimeForMatching();
-        for (int time = 0; time < maxTime; time++) {
-            HashMap<Integer, int[]> permHashMap = permutationHashMap;
-            initL(problem.getnP());
-            i = 0;
-            int nPairs = 0;
-            nL = problem.getnP();
-            while (i < nL) { // loop
-                p = permHashMap.get(L[i]);
-                nn = 0; // neighbors
-                for (j = i + 1; j < nL; j++) {
-                    q = permHashMap.get(L[j]);
-                    if (permUtil.checkNeighbor(p, q)) {
-                        neighbors[nn++] = j;
-                    }
-                }
-
-                if (nn == 0) {
-                    i++;
-                    continue;
-                }
-                // new pair
-                int qRandom = new Random().nextInt(nn);
-                pairs[L[i]] = L[neighbors[qRandom]];
-                pairs[L[neighbors[qRandom]]] = L[i];
-                nL -= 2;
-
-                int offset = 1;
-                for (k = i; k < nL; k++) {
-                    if (L[k + 1] == L[neighbors[qRandom]]) {
-                        offset = 2;
-                    }
-                    L[k] = L[k + offset];
-                }
-            }
-
-            if (minL > nL) {
-                minL = nL;
-                System.out.println(" minN " + minL);
-                if (nL == 0) {
-                    permUtil.printArray(pairs, " Pairs ");
+    public void findMatchingRandom(Problem problem, Neighbor neighbor) {
+        initPairs(problem);
+        // L: random sequence to traverse N perms
+        initL(problem.getnP());
+        int i=0;
+        while (i<L.size()){
+            int curr=L.get(0);
+            ArrayList<Integer> currNbs=neighbor.getNeighbors(curr);
+            Collections.shuffle(currNbs);
+            for (int j=0;j<currNbs.size();j++){
+                int nbr=currNbs.get(j);
+                if(L.contains(nbr)){
+                    pairs[curr]=nbr;
+                    pairs[nbr]=curr;
+                    L.removeIf(s->s.equals(curr));
+                    L.removeIf((s->s.equals(nbr)));
                     break;
                 }
-
+                if (j==currNbs.size()-1){
+                    i++;
+                }
             }
         }
+        System.out.println(Arrays.toString(pairs));
     }
 
     public void findMatchingMM1(Problem problem, Neighbor neighbor) {
@@ -178,5 +151,68 @@ public class Matching {
             }
         }
         return -1;
+    }
+
+    public void findMatchingRandomWalkBfs(Problem problem,Neighbor neighbor){
+        initL(problem.getnP());
+        matched=new ArrayList<>();
+        setUnmatched(problem);
+        for (int i=0;i<L.size();i++){
+            int currNode=L.get(i);
+            ArrayList<Integer> currNbrs=neighbor.getNeighbors(currNode);
+            Collections.shuffle(currNbrs);
+            // check if there is a unmatched nbr
+            boolean unmatchedNbrExists=false;
+            int designatedNbr=0;
+            for (Integer nbr : currNbrs) {
+                if (unmatched.contains(nbr)) {
+                    unmatchedNbrExists = true;
+                    designatedNbr=nbr;
+                    break;
+                }
+            }
+            // if unmatchedNbrExists == true, just add to matched and do the remove
+            if (unmatchedNbrExists){
+                matched.add(currNode);
+                matched.add(designatedNbr);
+                int finalCurrNode = currNode;
+                unmatched.removeIf(s->s.equals(finalCurrNode));
+                int finalDesignatedNbr = designatedNbr;
+                unmatched.removeIf(s->s.equals(finalDesignatedNbr));
+                L.remove(0);
+                L.removeIf(s->s.equals(finalDesignatedNbr));
+                continue;
+            }
+            // if unmatchedNbrExists == false, do bfs + expand
+            ArrayList<Integer> visitedPath=new ArrayList<>();
+            visitedPath.add(currNode);
+            while (!unmatched.contains(currNode)){
+                currNbrs=neighbor.getNeighbors(currNode);
+                for(int j=0;j<currNbrs.size();j++){
+                    designatedNbr=currNbrs.get(j);
+                    if (unmatched.contains(designatedNbr)){
+                        visitedPath.add(designatedNbr);
+                        currNode=designatedNbr;
+                        break;
+                    }
+                    if (visitedPath.contains(findPartner(designatedNbr))){
+                        continue;
+                    }
+                    visitedPath.add(currNode);
+                    visitedPath.add(designatedNbr);
+                    matched.add(currNode);
+                    matched.add(designatedNbr);
+                    int finalCurrNode = currNode;
+                    unmatched.removeIf(s->s.equals(finalCurrNode));
+                    int finalDesignatedNbr = designatedNbr;
+                    unmatched.removeIf(s->s.equals(finalDesignatedNbr));
+                    // Update currNode
+                    currNode=visitedPath.get(visitedPath.size()-1);
+                    break;
+                }
+            }
+
+        }
+        System.out.println(matched.size());
     }
 }
