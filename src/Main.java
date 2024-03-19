@@ -6,15 +6,16 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        Problem problem=new Problem();
-        problem.setMaxTimeForMatching(1000000);
-        problem.setN(8);
-        Neighbor neighbor = new Neighbor(problem);
-        neighbor.getNeighbors(0);
 //        Snake snake = new Snake();
 //        snake.initPath(problem);
 //        snake.start(neighbor,problem);
-        Matching matching=new Matching(problem);
-        matching.findMatchingRandomWalkBfs(problem,neighbor);
+        for(int i=4;i<=10;i++){
+            System.out.print("n="+i+"\t");
+            Problem problem=new Problem();
+            problem.setN(i);
+            Neighbor neighbor = new Neighbor(problem);
+            Matching matching=new Matching(problem);
+            matching.solveBySimpleRandomExp(problem,neighbor,100);
+        }
     }
 }
