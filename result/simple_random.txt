@@ -1,0 +1,7 @@
+n=4	total=206|avg=2|min=0|max=6
+n=5	total=1020|avg=10|min=6|max=18
+n=6	total=5520|avg=55|min=38|max=72
+n=7	total=35386|avg=353|min=318|max=388
+n=8	total=259000|avg=2590|min=2450|max=2696
+n=9	total=2146090|avg=21460|min=21188|max=21746
+n=10	total=19836318|avg=198363|min=197356|max=199674

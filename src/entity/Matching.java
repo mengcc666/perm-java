@@ -279,6 +279,8 @@ public class Matching {
         // How many unmatched node left?
         int totalLeft=0,minLeft=problem.getnP(),maxLeft=-1;
         for (int i = 0; i < expTimes; i++) {
+            // Empty matched at begin of one exp
+            matched=new ArrayList<>();
             // Experiment starts from next line
             initL(problem.getnP());
             for (int currentNode : L) {
