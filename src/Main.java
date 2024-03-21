@@ -16,7 +16,9 @@ public class Main {
             problem.setN(i);
             Neighbor neighbor = new Neighbor(problem);
             Matching matching=new Matching(problem);
+            // Experiment on SimpleRandom
             matching.solveBySimpleRandomExp(problem,neighbor,100);
+            // Experiment on RandomWalk
 //            matching.solveByRandomWalkExp(problem,neighbor,100,problem.getnP()/3);
         }
     }
