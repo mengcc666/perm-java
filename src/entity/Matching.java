@@ -5,6 +5,8 @@ import util.PermutationRank;
 
 import java.util.*;
 
+import static java.lang.System.exit;
+
 public class Matching {
 
 
@@ -12,7 +14,10 @@ public class Matching {
 
 
     private int[] pairs;
-    private ArrayList<Integer> matched;
+    private ArrayList<Integer> matchedArrayList;
+
+    private HashMap<Integer, Integer> matchedHashMap;
+
     private HashMap<Integer, Integer> predecessor = new HashMap<>();
     private ArrayList<Integer> unmatched;
     private final PermUtil permUtil = new PermUtil();
@@ -46,7 +51,7 @@ public class Matching {
     public Matching(Problem problem) {
         setPermutationHashMap(problem);
         initPairs(problem);
-        matched = new ArrayList<>();
+        matchedArrayList = new ArrayList<>();
         initUnmatched(problem);
     }
 
@@ -105,8 +110,8 @@ public class Matching {
             int nextNode = neighborsOfCurrNode.get(0);
             // Next node is unmatched, just add (currNode, nextNode) to matched and remove them from unmatched
             if (unmatched.contains(nextNode)) {
-                matched.add(currNode);
-                matched.add(nextNode);
+                matchedArrayList.add(currNode);
+                matchedArrayList.add(nextNode);
                 unmatched.remove(0);// Remove current node
                 final int finalNextNode = nextNode;
                 unmatched.removeIf(s -> s.equals(finalNextNode));
@@ -134,26 +139,26 @@ public class Matching {
                         visited.add(currNode);
                         for (int v : visited) {
                             unmatched.removeIf(s -> s.equals(v));
-                            matched.removeIf(s -> s.equals(v));
+                            matchedArrayList.removeIf(s -> s.equals(v));
                         }
-                        matched.addAll(visited);
+                        matchedArrayList.addAll(visited);
                         break;
                     }
                 } while (!deadEnd);
             }
 //            System.out.println(String.valueOf(matched.size())+matched);
-            System.out.println(matched.size());
+            System.out.println(matchedArrayList.size());
         }
 
     }
 
     private int findPartner(int nodeIndex) {
-        for (int i = 0; i < matched.size(); i++) {
-            if (matched.get(i) == nodeIndex) {
+        for (int i = 0; i < matchedArrayList.size(); i++) {
+            if (matchedArrayList.get(i) == nodeIndex) {
                 if (i % 2 == 0) {
-                    return matched.get(i + 1);
+                    return matchedArrayList.get(i + 1);
                 } else {
-                    return matched.get(i - 1);
+                    return matchedArrayList.get(i - 1);
                 }
             }
         }
@@ -209,107 +214,199 @@ public class Matching {
         return -1;
     }
 
-    ArrayList<Integer> getRandomWalkPath(int unmatchedNodeInTheEndOfPath) {
-        int curr = unmatchedNodeInTheEndOfPath;
-        ArrayList<Integer> path = new ArrayList<>();
-        while (predecessor.get(curr) != -1) {
-            path.add(curr);
-            curr = predecessor.get(curr);
-        }
-        path.add(curr);
-        return path;
-    }
+//    ArrayList<Integer> getRandomWalkPath(int unmatchedNodeInTheEndOfPath) {
+//        int curr = unmatchedNodeInTheEndOfPath;
+//        ArrayList<Integer> path = new ArrayList<>();
+//        while (predecessor.get(curr) != -1) {
+//            path.add(curr);
+//            curr = predecessor.get(curr);
+//        }
+//        path.add(curr);
+//        return path;
+//    }
 
-    public void findMatchingRandomWalkBfs(Problem problem, Neighbor neighbor) {
-        initL(problem.getnP());
-        matched = new ArrayList<>();
-        initUnmatched(problem);
-        for (int i = 0; i < L.size(); ) {
-            int currNode = L.get(0);
-            ArrayList<Integer> currNbrs = neighbor.getNeighbors(currNode);
-            Collections.shuffle(currNbrs);
-            // check if there is unmatched nbr
-            boolean unmatchedNbrExists = false;
-            int designatedNbr = 0;
-            for (Integer nbr : currNbrs) {
-                if (unmatched.contains(nbr)) {
-                    unmatchedNbrExists = true;
-                    designatedNbr = nbr;
-                    break;
-                }
-            }
-            // if unmatchedNbrExists == true, just add to matched and do the remove
-            if (unmatchedNbrExists) {
-                matched.add(currNode);
-                matched.add(designatedNbr);
-                unmatched.removeIf(s -> s.equals(currNode));
-                int finalDesignatedNbr = designatedNbr;
-                unmatched.removeIf(s -> s.equals(finalDesignatedNbr));
-                L.remove(0);
-                L.removeIf(s -> s.equals(finalDesignatedNbr));
-            } else {// if unmatchedNbrExists == false, do bfs + expand
-                // Expand from currNode alternatively, until:(1)meet an unmatched node(2)dead end
-                int unmatchedNodeInTheEndOfPath = BFS(currNode, neighbor);
-                ArrayList<Integer> randomWalkPath = getRandomWalkPath(unmatchedNodeInTheEndOfPath);
-//                System.out.println("randomWalkPath: "+randomWalkPath);
-                for (int j = 0; j < randomWalkPath.size(); j++) {
-                    int finalJ = j;
-                    matched.removeIf(s -> s.equals(randomWalkPath.get(finalJ)));
-                }
-                for (int j = 0; j < randomWalkPath.size(); j += 2) {
-                    matched.add(randomWalkPath.get(j));
-                    matched.add(randomWalkPath.get(j + 1));
-                }
-                unmatched.removeIf(s -> s.equals(randomWalkPath.get(0)));
-                unmatched.removeIf(s -> s.equals(randomWalkPath.get(randomWalkPath.size() - 1)));
-                L.remove(0);
-                L.removeIf(s -> s.equals(unmatchedNodeInTheEndOfPath));
-            }
-            System.out.println(matched.size());
-
-
-        }
-        System.out.println(matched.size());
-        System.out.println(matched);
-
-
-    }
+//    public void findMatchingRandomWalkBfs(Problem problem, Neighbor neighbor) {
+//        initL(problem.getnP());
+//        matchedArrayList = new ArrayList<>();
+//        initUnmatched(problem);
+//        for (int i = 0; i < L.size(); ) {
+//            int currNode = L.get(0);
+//            ArrayList<Integer> currNbrs = neighbor.getNeighbors(currNode);
+//            Collections.shuffle(currNbrs);
+//            // check if there is unmatched nbr
+//            boolean unmatchedNbrExists = false;
+//            int designatedNbr = 0;
+//            for (Integer nbr : currNbrs) {
+//                if (unmatched.contains(nbr)) {
+//                    unmatchedNbrExists = true;
+//                    designatedNbr = nbr;
+//                    break;
+//                }
+//            }
+//            // if unmatchedNbrExists == true, just add to matched and do the remove
+//            if (unmatchedNbrExists) {
+//                matchedArrayList.add(currNode);
+//                matchedArrayList.add(designatedNbr);
+//                unmatched.removeIf(s -> s.equals(currNode));
+//                int finalDesignatedNbr = designatedNbr;
+//                unmatched.removeIf(s -> s.equals(finalDesignatedNbr));
+//                L.remove(0);
+//                L.removeIf(s -> s.equals(finalDesignatedNbr));
+//            } else {// if unmatchedNbrExists == false, do bfs + expand
+//                // Expand from currNode alternatively, until:(1)meet an unmatched node(2)dead end
+//                int unmatchedNodeInTheEndOfPath = BFS(currNode, neighbor);
+//                ArrayList<Integer> randomWalkPath = getRandomWalkPath(unmatchedNodeInTheEndOfPath);
+////                System.out.println("randomWalkPath: "+randomWalkPath);
+//                for (int j = 0; j < randomWalkPath.size(); j++) {
+//                    int finalJ = j;
+//                    matchedArrayList.removeIf(s -> s.equals(randomWalkPath.get(finalJ)));
+//                }
+//                for (int j = 0; j < randomWalkPath.size(); j += 2) {
+//                    matchedArrayList.add(randomWalkPath.get(j));
+//                    matchedArrayList.add(randomWalkPath.get(j + 1));
+//                }
+//                unmatched.removeIf(s -> s.equals(randomWalkPath.get(0)));
+//                unmatched.removeIf(s -> s.equals(randomWalkPath.get(randomWalkPath.size() - 1)));
+//                L.remove(0);
+//                L.removeIf(s -> s.equals(unmatchedNodeInTheEndOfPath));
+//            }
+//            System.out.println(matchedArrayList.size());
+//
+//
+//        }
+//        System.out.println(matchedArrayList.size());
+//        System.out.println(matchedArrayList);
+//
+//
+//    }
 
     public void solveBySimpleRandomExp(Problem problem, Neighbor neighbor, int expTimes) {
         // How many unmatched node left?
-        int totalLeft=0,minLeft=problem.getnP(),maxLeft=-1;
+        double totalLeft = 0, minLeft = problem.getnP(), maxLeft = -1;
         for (int i = 0; i < expTimes; i++) {
             // Empty matched at begin of one exp
-            matched=new ArrayList<>();
+            matchedArrayList = new ArrayList<>();
             // Experiment starts from next line
             initL(problem.getnP());
             for (int currentNode : L) {
-                if (!LHashSet.contains(currentNode)){
+                if (!LHashSet.contains(currentNode)) {
                     continue;
                 }
                 ArrayList<Integer> currentNodeNeighbors = neighbor.getNeighbors(currentNode);
                 ArrayList<Integer> unmatchedNeighbors = new ArrayList<>();
-                for (int currNbr:currentNodeNeighbors){
-                    if (LHashSet.contains(currNbr)){
+                for (int currNbr : currentNodeNeighbors) {
+                    if (LHashSet.contains(currNbr)) {
                         unmatchedNeighbors.add(currNbr);
                     }
                 }
-                if (unmatchedNeighbors.isEmpty()){
+                if (unmatchedNeighbors.isEmpty()) {
                     continue;
                 }
                 // Choose random one
-                int randomIndex = (int)(Math.random() * unmatchedNeighbors.size());
-                int designatedNbr=unmatchedNeighbors.get(randomIndex);
+                int randomIndex = (int) (Math.random() * unmatchedNeighbors.size());
+                int designatedNbr = unmatchedNeighbors.get(randomIndex);
                 LHashSet.remove(currentNode);
                 LHashSet.remove(designatedNbr);
-                matched.add(currentNode);
-                matched.add(designatedNbr);
+                matchedArrayList.add(currentNode);
+                matchedArrayList.add(designatedNbr);
             }
-            int countLeft=LHashSet.size();
-            totalLeft+=countLeft;
-            if (countLeft>maxLeft) maxLeft=countLeft;
-            if (countLeft<minLeft) minLeft=countLeft;
+            int countLeft = LHashSet.size();
+            totalLeft += countLeft;
+            if (countLeft > maxLeft) maxLeft = countLeft;
+            if (countLeft < minLeft) minLeft = countLeft;
         }
-        System.out.println("total="+totalLeft+"|avg="+totalLeft/expTimes+"|min="+minLeft+"|max="+maxLeft);
+        System.out.println("total=" + totalLeft + "|avg=" + totalLeft / expTimes + "|min=" + minLeft + "|max=" + maxLeft);
+    }
+
+    /*
+        Difference between SimpleRandom and RandomWalk:
+            RandomWalk will do randomWalk when the unmatched node's neighbors are all matched
+     */
+    public void solveByRandomWalkExp(Problem problem, Neighbor neighbor, int expTimes,int randomWalkPathLengthLimit) {
+        // How many unmatched node left?
+        double totalLeft = 0, minLeft = problem.getnP(), maxLeft = -1;
+        for (int i = 0; i < expTimes; i++) {
+            // Empty matched at begin of one exp
+            matchedHashMap = new HashMap<>();
+            // Experiment starts from next line
+            initL(problem.getnP());
+            for (int currentNode : L) {
+                if (!LHashSet.contains(currentNode)) { //LHashSet: stores unmatched nodes
+                    continue;
+                }
+                ArrayList<Integer> currentNodeNeighbors = neighbor.getNeighbors(currentNode);
+                ArrayList<Integer> unmatchedNeighbors = new ArrayList<>();
+                for (int currNbr : currentNodeNeighbors) {
+                    if (LHashSet.contains(currNbr)) {
+                        unmatchedNeighbors.add(currNbr);
+                    }
+                }
+                if (!unmatchedNeighbors.isEmpty()){
+                    // Pick random one, make a pair
+                    int randomIndex = (int) (Math.random() * unmatchedNeighbors.size());
+                    int designatedNbr = unmatchedNeighbors.get(randomIndex);
+                    LHashSet.remove(currentNode);
+                    LHashSet.remove(designatedNbr);
+                    matchedHashMap.put(currentNode, designatedNbr);
+                    matchedHashMap.put(designatedNbr, currentNode);
+                    continue;
+                }
+                ArrayList<Integer> randomWalkPath=getRandomWalkPath(neighbor,randomWalkPathLengthLimit,currentNode);
+                // randomWalkPath may be "null" if its length exceed limit. If null, do nothing
+                if (randomWalkPath!=null){
+                    // Remove the two end node from L
+                    int firstNodeInPath=randomWalkPath.get(0);
+                    int lastNodeInPath=randomWalkPath.get(randomWalkPath.size()-1);
+                    LHashSet.remove(firstNodeInPath);
+                    LHashSet.remove(lastNodeInPath);
+                    // Change pairs relationship in matchedHashMap
+                    for (int j=0;j<randomWalkPath.size()-1;j++){
+                        if (j%2==0){
+                            matchedHashMap.put(randomWalkPath.get(j),randomWalkPath.get(j+1));
+                            matchedHashMap.put(randomWalkPath.get(j+1),randomWalkPath.get(j));
+                        }else {
+                            matchedHashMap.put(randomWalkPath.get(j),randomWalkPath.get(j-1));
+                            matchedHashMap.put(randomWalkPath.get(j-1),randomWalkPath.get(j));
+                        }
+                    }
+                }
+            }
+            int countLeft = LHashSet.size();
+            totalLeft += countLeft;
+            if (countLeft > maxLeft) maxLeft = countLeft;
+            if (countLeft < minLeft) minLeft = countLeft;
+        }
+        System.out.println("total=" + totalLeft + "|avg=" + totalLeft / expTimes + "|min=" + minLeft + "|max=" + maxLeft);
+    }
+
+    private ArrayList<Integer> getRandomWalkPath(Neighbor neighbor,int randomWalkPathLengthLimit,int currentNode){
+        ArrayList<Integer> randomWalkPath=new ArrayList<>();
+        ArrayList<Integer> currentNodeNeighbors = new ArrayList<>();
+        ArrayList<Integer> unmatchedNeighbors = new ArrayList<>();
+        while (true){
+            randomWalkPath.add(currentNode);
+            currentNodeNeighbors=neighbor.getNeighbors(currentNode);
+            unmatchedNeighbors=new ArrayList<>();
+            for (int currNbr : currentNodeNeighbors) {
+                if (LHashSet.contains(currNbr)) {
+                    unmatchedNeighbors.add(currNbr);
+                }
+            }
+            if (!unmatchedNeighbors.isEmpty()){
+                Collections.shuffle(unmatchedNeighbors);
+                randomWalkPath.add(unmatchedNeighbors.get(0));
+                return randomWalkPath;
+            }
+            if (randomWalkPath.size()>randomWalkPathLengthLimit){
+                return null;
+            }
+            // Pick random one and do random walk
+            int randomIndex = (int) (Math.random() * currentNodeNeighbors.size());
+            int designatedNbr = currentNodeNeighbors.get(randomIndex);
+            int partnerOfDesignatedNbr=matchedHashMap.get(designatedNbr);
+            randomWalkPath.add(designatedNbr);
+            currentNode=partnerOfDesignatedNbr;
+
+        }
     }
 }

@@ -1,0 +1,7 @@
+n=4	total=24.0|avg=0.24|min=0.0|max=2.0
+n=5	total=40.0|avg=0.4|min=0.0|max=4.0
+n=6	total=46.0|avg=0.46|min=0.0|max=4.0
+n=7	total=32.0|avg=0.32|min=0.0|max=2.0
+n=8	total=14.0|avg=0.14|min=0.0|max=2.0
+n=9	total=8.0|avg=0.08|min=0.0|max=2.0
+n=10	total=0.0|avg=0.0|min=0.0|max=0.0

@@ -1,7 +1,7 @@
-n=4	total=206|avg=2|min=0|max=6
-n=5	total=1020|avg=10|min=6|max=18
-n=6	total=5520|avg=55|min=38|max=72
-n=7	total=35386|avg=353|min=318|max=388
-n=8	total=259000|avg=2590|min=2450|max=2696
-n=9	total=2146090|avg=21460|min=21188|max=21746
-n=10	total=19836318|avg=198363|min=197356|max=199674
+n=4	total=210.0|avg=2.1|min=0.0|max=6.0
+n=5	total=1036.0|avg=10.36|min=4.0|max=18.0
+n=6	total=5644.0|avg=56.44|min=42.0|max=70.0
+n=7	total=35466.0|avg=354.66|min=320.0|max=408.0
+n=8	total=259672.0|avg=2596.72|min=2510.0|max=2680.0
+n=9	total=2145586.0|avg=21455.86|min=21148.0|max=21798.0
+n=10	total=1.983476E7|avg=198347.6|min=197388.0|max=199278.0

@@ -9,6 +9,7 @@ public class Main {
 //        Snake snake = new Snake();
 //        snake.initPath(problem);
 //        snake.start(neighbor,problem);
+
         for(int i=4;i<=10;i++){
             System.out.print("n="+i+"\t");
             Problem problem=new Problem();
@@ -16,6 +17,7 @@ public class Main {
             Neighbor neighbor = new Neighbor(problem);
             Matching matching=new Matching(problem);
             matching.solveBySimpleRandomExp(problem,neighbor,100);
+//            matching.solveByRandomWalkExp(problem,neighbor,100,problem.getnP()/3);
         }
     }
 }
