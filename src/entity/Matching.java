@@ -331,6 +331,7 @@ public class Matching {
             initL(problem.getnP());
             for (int currentNode : L) {
                 if (!LHashSet.contains(currentNode)) { //LHashSet: stores unmatched nodes
+                    if (LHashSet.isEmpty()) break;
                     continue;
                 }
                 ArrayList<Integer> currentNodeNeighbors = neighbor.getNeighbors(currentNode);
