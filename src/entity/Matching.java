@@ -5,8 +5,6 @@ import util.PermutationRank;
 
 import java.util.*;
 
-import static java.lang.System.exit;
-
 public class Matching {
 
 
@@ -322,9 +320,10 @@ public class Matching {
         Difference between SimpleRandom and RandomWalk:
             RandomWalk will do randomWalk when the unmatched node's neighbors are all matched
      */
-    public void solveByRandomWalkExp(Problem problem, Neighbor neighbor, int expTimes,int randomWalkPathLengthLimit) {
+    public void solveByRandomWalkExp(Problem problem, Neighbor neighbor, int expTimes, int randomWalkPathLengthLimit) {
         // How many unmatched node left?
-        double totalLeft = 0, minLeft = problem.getnP(), maxLeft = -1;
+        double totalLeft = 0;
+        int minLeft = problem.getnP(), maxLeft = -1;
         for (int i = 0; i < expTimes; i++) {
             // Empty matched at begin of one exp
             matchedHashMap = new HashMap<>();
@@ -341,7 +340,7 @@ public class Matching {
                         unmatchedNeighbors.add(currNbr);
                     }
                 }
-                if (!unmatchedNeighbors.isEmpty()){
+                if (!unmatchedNeighbors.isEmpty()) {
                     // Pick random one, make a pair
                     int randomIndex = (int) (Math.random() * unmatchedNeighbors.size());
                     int designatedNbr = unmatchedNeighbors.get(randomIndex);
@@ -351,22 +350,22 @@ public class Matching {
                     matchedHashMap.put(designatedNbr, currentNode);
                     continue;
                 }
-                ArrayList<Integer> randomWalkPath=getRandomWalkPath(neighbor,randomWalkPathLengthLimit,currentNode);
+                ArrayList<Integer> randomWalkPath = getRandomWalkPath(neighbor, randomWalkPathLengthLimit, currentNode);
                 // randomWalkPath may be "null" if its length exceed limit. If null, do nothing
-                if (randomWalkPath!=null){
+                if (randomWalkPath != null) {
                     // Remove the two end node from L
-                    int firstNodeInPath=randomWalkPath.get(0);
-                    int lastNodeInPath=randomWalkPath.get(randomWalkPath.size()-1);
+                    int firstNodeInPath = randomWalkPath.get(0);
+                    int lastNodeInPath = randomWalkPath.get(randomWalkPath.size() - 1);
                     LHashSet.remove(firstNodeInPath);
                     LHashSet.remove(lastNodeInPath);
                     // Change pairs relationship in matchedHashMap
-                    for (int j=0;j<randomWalkPath.size()-1;j++){
-                        if (j%2==0){
-                            matchedHashMap.put(randomWalkPath.get(j),randomWalkPath.get(j+1));
-                            matchedHashMap.put(randomWalkPath.get(j+1),randomWalkPath.get(j));
-                        }else {
-                            matchedHashMap.put(randomWalkPath.get(j),randomWalkPath.get(j-1));
-                            matchedHashMap.put(randomWalkPath.get(j-1),randomWalkPath.get(j));
+                    for (int j = 0; j < randomWalkPath.size() - 1; j++) {
+                        if (j % 2 == 0) {
+                            matchedHashMap.put(randomWalkPath.get(j), randomWalkPath.get(j + 1));
+                            matchedHashMap.put(randomWalkPath.get(j + 1), randomWalkPath.get(j));
+                        } else {
+                            matchedHashMap.put(randomWalkPath.get(j), randomWalkPath.get(j - 1));
+                            matchedHashMap.put(randomWalkPath.get(j - 1), randomWalkPath.get(j));
                         }
                     }
                 }
@@ -379,34 +378,54 @@ public class Matching {
         System.out.println("total=" + totalLeft + "|avg=" + totalLeft / expTimes + "|min=" + minLeft + "|max=" + maxLeft);
     }
 
-    private ArrayList<Integer> getRandomWalkPath(Neighbor neighbor,int randomWalkPathLengthLimit,int currentNode){
-        ArrayList<Integer> randomWalkPath=new ArrayList<>();
+    private ArrayList<Integer> getRandomWalkPath(Neighbor neighbor, int randomWalkPathLengthLimit, int currentNode) {
+        ArrayList<Integer> randomWalkPath = new ArrayList<>();
+        HashSet<Integer> visited = new HashSet<>();
         ArrayList<Integer> currentNodeNeighbors = new ArrayList<>();
         ArrayList<Integer> unmatchedNeighbors = new ArrayList<>();
-        while (true){
+        while (true) {
             randomWalkPath.add(currentNode);
-            currentNodeNeighbors=neighbor.getNeighbors(currentNode);
-            unmatchedNeighbors=new ArrayList<>();
-            for (int currNbr : currentNodeNeighbors) {
+            visited.add(currentNode);
+            currentNodeNeighbors = neighbor.getNeighbors(currentNode);
+            // Dead end check: If all neighbors are already visited along the path, then break(do nothing)
+            ArrayList<Integer> unvisitedNeighbors = getUnvisitedNeighbors(currentNodeNeighbors, visited);
+            if (unvisitedNeighbors.isEmpty()) {
+                return null;
+            }
+            // There is/are unvisited neighbor(s),
+            // next, check if there is an unmatched node in unvisted, if so, we found the complete path
+            unmatchedNeighbors = new ArrayList<>();
+            for (int currNbr : unvisitedNeighbors) {
                 if (LHashSet.contains(currNbr)) {
                     unmatchedNeighbors.add(currNbr);
                 }
             }
-            if (!unmatchedNeighbors.isEmpty()){
+            if (!unmatchedNeighbors.isEmpty()) {
                 Collections.shuffle(unmatchedNeighbors);
                 randomWalkPath.add(unmatchedNeighbors.get(0));
                 return randomWalkPath;
             }
-            if (randomWalkPath.size()>randomWalkPathLengthLimit){
+            // There are unvisited but there is no unmatched, then comes to the walk
+            if (randomWalkPath.size() > randomWalkPathLengthLimit) {
                 return null;
             }
-            // Pick random one and do random walk
-            int randomIndex = (int) (Math.random() * currentNodeNeighbors.size());
-            int designatedNbr = currentNodeNeighbors.get(randomIndex);
-            int partnerOfDesignatedNbr=matchedHashMap.get(designatedNbr);
+            // Pick random one and update currNode, do random walk
+            Collections.shuffle(unvisitedNeighbors);
+            int designatedNbr = unvisitedNeighbors.get(0);
+            int partnerOfDesignatedNbr = matchedHashMap.get(designatedNbr);
             randomWalkPath.add(designatedNbr);
-            currentNode=partnerOfDesignatedNbr;
+            currentNode = partnerOfDesignatedNbr;
 
         }
+    }
+
+    private ArrayList<Integer> getUnvisitedNeighbors(ArrayList<Integer> currentNodeNeighbors, HashSet<Integer> visited) {
+        ArrayList<Integer> safeNeighbors = new ArrayList<>();
+        for (int nbr : currentNodeNeighbors) {
+            if (!visited.contains(nbr)) {
+                safeNeighbors.add(nbr);
+            }
+        }
+        return safeNeighbors;
     }
 }
