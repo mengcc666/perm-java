@@ -19,7 +19,8 @@ public class Main {
             // Experiment on SimpleRandom
 //            matching.solveBySimpleRandomExp(problem,neighbor,100);
             // Experiment on RandomWalk
-            matching.solveByRandomWalkExp(problem,neighbor,100,problem.getnP()/3);
+//            matching.solveByRandomWalkExp(problem,neighbor,100,problem.getnP());
+            matching.solveByRandomWalkBfsExp(problem,neighbor,100);
         }
     }
 }
