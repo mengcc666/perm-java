@@ -11,7 +11,7 @@ public class Main {
 //        snake.start(neighbor,problem);
 
         for(int i=4;i<=10;i++){
-            System.out.print("n="+i+"\t");
+            System.out.print("n="+i+"\n");
             Problem problem=new Problem();
             problem.setN(i);
             Neighbor neighbor = new Neighbor(problem);
@@ -20,7 +20,8 @@ public class Main {
 //            matching.solveBySimpleRandomExp(problem,neighbor,100);
             // Experiment on RandomWalk
 //            matching.solveByRandomWalkExp(problem,neighbor,100,problem.getnP());
-            matching.solveByRandomWalkBfsExp(problem,neighbor,100);
+//            matching.solveByRandomWalkBfsExp(problem,neighbor,100);
+            matching.redBlueMatchingExp(problem,neighbor, problem.getnP(),100);
         }
     }
 }

@@ -5,6 +5,8 @@ import util.PermutationRank;
 
 import java.util.*;
 
+import static java.lang.System.exit;
+
 public class Matching {
 
 
@@ -163,7 +165,7 @@ public class Matching {
         return -1;
     }
 
-    private int findPartnerBfs(int nodeIndex){
+    private int findPartnerBfs(int nodeIndex) {
         return matchedHashMap.get(nodeIndex);
     }
 
@@ -318,7 +320,7 @@ public class Matching {
             if (countLeft < minLeft) minLeft = countLeft;
         }
         System.out.println("total=" + totalLeft + "|avg=" + totalLeft / expTimes + "|min=" + minLeft + "|max=" + maxLeft
-        +"|portion="+(totalLeft / expTimes)/problem.getnP());
+                + "|portion=" + (totalLeft / expTimes) / problem.getnP());
     }
 
     /*
@@ -420,6 +422,8 @@ public class Matching {
             int designatedNbr = unvisitedNeighbors.get(0);
             int partnerOfDesignatedNbr = matchedHashMap.get(designatedNbr);
             randomWalkPath.add(designatedNbr);
+            visited.add(designatedNbr);
+            visited.add(partnerOfDesignatedNbr);
             currentNode = partnerOfDesignatedNbr;
 
         }
@@ -435,7 +439,7 @@ public class Matching {
         return safeNeighbors;
     }
 
-    public void solveByRandomWalkBfsExp(Problem problem,Neighbor neighbor,int expTimes) {
+    public void solveByRandomWalkBfsExp(Problem problem, Neighbor neighbor, int expTimes) {
         // How many unmatched node left?
         double totalLeft = 0;
         int minLeft = problem.getnP(), maxLeft = -1;
@@ -466,7 +470,7 @@ public class Matching {
                     matchedHashMap.put(designatedNbr, currentNode);
                     continue;
                 }
-                ArrayList<Integer> randomWalkPath = getRandomWalkPathBfs(problem,neighbor, currentNode);
+                ArrayList<Integer> randomWalkPath = getRandomWalkPathBfs(problem, neighbor, currentNode);
                 // randomWalkPath may be "null" if its length exceed limit. If null, do nothing
                 if (randomWalkPath != null) {
                     // Remove the two end node from L
@@ -495,47 +499,162 @@ public class Matching {
 
     }
 
-    private ArrayList<Integer> getRandomWalkPathBfs(Problem problem,Neighbor neighbor,int startNode) {
+    private ArrayList<Integer> getRandomWalkPathBfs(Problem problem, Neighbor neighbor, int startNode) {
         // BFS
-        int[] parents=new int[problem.getnP()];
-        parents[startNode]=-1;
-        Queue<Integer> bfsQueue=new LinkedList<>();
+        int[] parents = new int[problem.getnP()];
+        parents[startNode] = -1;
+        Queue<Integer> bfsQueue = new LinkedList<>();
         bfsQueue.add(startNode);
-        boolean[] visited=new boolean[problem.getnP()];
-        visited[startNode]=true;
-        int lastNode=-1;
-        while (!bfsQueue.isEmpty()){
-            if (lastNode!=-1){
+        boolean[] visited = new boolean[problem.getnP()];
+        visited[startNode] = true;
+        int lastNode = -1;
+        while (!bfsQueue.isEmpty()) {
+            if (lastNode != -1) {
                 break;
             }
-            int currentNode=bfsQueue.poll();
-            ArrayList<Integer> currNeighbors=neighbor.getNeighbors(currentNode);
-            for (int nbr:currNeighbors){
-                if (LHashSet.contains(nbr)){
+            int currentNode = bfsQueue.poll();
+            ArrayList<Integer> currNeighbors = neighbor.getNeighbors(currentNode);
+            for (int nbr : currNeighbors) {
+                if (LHashSet.contains(nbr)) {
                     // the unmatched node is found in the end of the path
-                    lastNode=nbr;
-                    parents[lastNode]=currentNode;
+                    lastNode = nbr;
+                    parents[lastNode] = currentNode;
                     break;
                 }
-                int partner=findPartnerBfs(nbr);
-                if (!visited[nbr]){
-                    visited[partner]=true;
-                    visited[nbr]=true;
-                    parents[nbr]=currentNode;
-                    parents[partner]=nbr;
+                int partner = findPartnerBfs(nbr);
+                if (!visited[nbr]) {
+                    visited[partner] = true;
+                    visited[nbr] = true;
+                    parents[nbr] = currentNode;
+                    parents[partner] = nbr;
                     bfsQueue.add(partner);
                 }
             }
 
         }
-        ArrayList<Integer> randomWalkPath=new ArrayList<>();
-        if (lastNode==-1) return randomWalkPath;
+        ArrayList<Integer> randomWalkPath = new ArrayList<>();
+        if (lastNode == -1) return randomWalkPath;
         randomWalkPath.add(lastNode);
-        while (parents[lastNode]!=-1){
+        while (parents[lastNode] != -1) {
             randomWalkPath.add(parents[lastNode]);
-            lastNode=parents[lastNode];
+            lastNode = parents[lastNode];
         }
 
         return randomWalkPath;
+    }
+
+    public void redBlueMatchingExp(Problem problem, Neighbor neighbor, int randomWalkPathLengthLimit, int expTime) {
+        System.out.print("Common edges:\t");
+        long min = problem.getnP();
+        long max = -1;
+        double total = 0;
+        for (int i = 0; i < expTime; i++) {
+            int countCommonEdge = redBlueMatching(problem, neighbor, randomWalkPathLengthLimit);
+            max = countCommonEdge > max ? countCommonEdge : max;
+            min = min > countCommonEdge ? countCommonEdge : min;
+            total+=countCommonEdge;
+        }
+        System.out.println("total=" + total + "|avg=" + total / expTime + "|min=" + min + "|max=" + max
+                + "|avg/np=" + (total / expTime) / problem.getnP());
+    }
+
+    public int redBlueMatching(Problem problem, Neighbor neighbor, int randomWalkPathLengthLimit) {
+        HashMap<Integer, Integer> redMatching = generateCompleteMatchingRW(problem, neighbor, randomWalkPathLengthLimit);
+        HashMap<Integer, Integer> blueMatching = generateCompleteMatchingRW(problem, neighbor, randomWalkPathLengthLimit);
+
+        // Count how many common egde that red and blue share
+        int countCommonEdges = 0;
+        for (int redKey : redMatching.keySet()) {
+            if (redMatching.get(redKey) == blueMatching.get(redKey)) {
+                countCommonEdges++;
+            }
+        }
+//        System.out.println(countCommonEdges);
+//        System.out.println(redMatching);
+//        System.out.println(blueMatching);
+        return countCommonEdges;
+    }
+
+    public HashMap<Integer, Integer> generateCompleteMatchingRW(Problem problem, Neighbor neighbor, int randomWalkPathLengthLimit) {
+        do {
+            // Empty matched at begin of one exp
+            matchedHashMap = new HashMap<>();
+            // Experiment starts from next line
+            initL(problem.getnP());
+            for (int currentNode : L) {
+                if (!checkMatchedDuplicated()) {
+                    System.out.println("error" + matchedHashMap);
+                    exit(0);
+                }
+//                System.out.println("test" + matchedHashMap);
+
+                if (!LHashSet.contains(currentNode)) { //LHashSet: stores unmatched nodes
+                    if (LHashSet.isEmpty()) break;
+                    continue;
+                }
+                ArrayList<Integer> currentNodeNeighbors = neighbor.getNeighbors(currentNode);
+                ArrayList<Integer> unmatchedNeighbors = new ArrayList<>();
+                for (int currNbr : currentNodeNeighbors) {
+                    if (LHashSet.contains(currNbr)) {
+                        unmatchedNeighbors.add(currNbr);
+                    }
+                }
+                if (!unmatchedNeighbors.isEmpty()) {
+                    // Pick random one, make a pair
+                    Collections.shuffle(unmatchedNeighbors);
+                    int designatedNbr = unmatchedNeighbors.get(0);
+                    LHashSet.remove(currentNode);
+                    LHashSet.remove(designatedNbr);
+                    matchedHashMap.put(currentNode, designatedNbr);
+                    matchedHashMap.put(designatedNbr, currentNode);
+                    continue;
+                }
+                ArrayList<Integer> randomWalkPath = getRandomWalkPath(neighbor, randomWalkPathLengthLimit, currentNode);
+//                System.out.println("*************test-path"+randomWalkPath);
+                // randomWalkPath may be "null" if its length exceed limit. If null, do nothing
+                if (randomWalkPath != null) {
+                    // Remove the two end node from L
+                    int firstNodeInPath = randomWalkPath.get(0);
+                    int lastNodeInPath = randomWalkPath.get(randomWalkPath.size() - 1);
+                    LHashSet.remove(firstNodeInPath);
+                    LHashSet.remove(lastNodeInPath);
+                    // Change pairs relationship in matchedHashMap
+                    for (int j = 0; j < randomWalkPath.size(); j += 2) {
+
+//                        System.out.println("test-flip, j="+j);
+//                        System.out.println("test-origin-match" + matchedHashMap);
+//                        if (!checkMatchedDuplicated()){
+//                            System.out.println("error occurs");
+//                        }
+                        matchedHashMap.put(randomWalkPath.get(j), randomWalkPath.get(j + 1));
+//                        System.out.println("test-("+randomWalkPath.get(j)+","+randomWalkPath.get(j + 1) +")"+ matchedHashMap);
+                        matchedHashMap.put(randomWalkPath.get(j + 1), randomWalkPath.get(j));
+//                        System.out.println("test-(" +randomWalkPath.get(j+1)+","+randomWalkPath.get(j) +")"+ matchedHashMap);
+                    }
+                    if (!checkMatchedDuplicated()) {
+                        System.out.println("error" + matchedHashMap);
+                        exit(0);
+                    }
+                }
+            }
+        } while (!LHashSet.isEmpty());
+//        System.out.println(matchedHashMap.size());
+        return matchedHashMap;
+    }
+
+    private boolean checkMatchedDuplicated() {
+        if (matchedHashMap.isEmpty()) return true;
+        if (matchedHashMap.size() % 2 == 1) return false;
+        for (int key : matchedHashMap.keySet()) {
+            int partner = matchedHashMap.get(key);
+            if (matchedHashMap.containsKey(partner)) {
+                if (matchedHashMap.get(partner) != key) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        return true;
     }
 }
